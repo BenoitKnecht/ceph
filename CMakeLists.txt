@@ -513,11 +513,6 @@ else()
   set(EXE_LINKER_USE_PIE ${ENABLE_SHARED})
 endif()
 
-if(NOT WIN32)
-  # require libcurl with good curl_multi_wait(), see https://tracker.ceph.com/issues/15915
-  find_package(CURL 7.32 REQUIRED)
-endif()
-
 find_package(OpenSSL REQUIRED)
 set(CRYPTO_LIBS OpenSSL::Crypto)
 
@@ -541,6 +536,12 @@ endif(WITH_BLKIN)
 option(WITH_JAEGER "Enable jaegertracing and it's dependent libraries" ON)
 if(WITH_JAEGER)
   set(HAVE_JAEGER TRUE)
+endif()
+
+# libcurl is used by RGW and by opentelemetry's jaeger exporter
+if(NOT WIN32 AND (WITH_RADOSGW OR WITH_JAEGER))
+  # require libcurl with good curl_multi_wait(), see https://tracker.ceph.com/issues/15915
+  find_package(CURL 7.32 REQUIRED)
 endif()
 
 # Catch2 C++ Unit Test support:
