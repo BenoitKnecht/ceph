@@ -247,7 +247,8 @@ else()
   set(HAVE_BLKID OFF)
 endif(LINUX)
 
-option(WITH_OPENLDAP "OPENLDAP is here" ON)
+CMAKE_DEPENDENT_OPTION(WITH_OPENLDAP "OPENLDAP is here" ON
+  "WITH_RADOSGW" OFF)
 if(WITH_OPENLDAP)
   find_package(OpenLDAP REQUIRED)
   set(HAVE_OPENLDAP ${OpenLDAP_FOUND})
@@ -546,7 +547,8 @@ endif()
 
 # Catch2 C++ Unit Test support:
 # This needs to come before any tests using Catch2.
-option(WITH_CATCH2 "Enable Catch2 unit tests" ON)
+CMAKE_DEPENDENT_OPTION(WITH_CATCH2 "Enable Catch2 unit tests" ON
+  "WITH_TESTS" OFF)
 option(WITH_SYSTEM_CATCH2 "Enable Catch2 unit tests (require system packages)" OFF)
 
 if(WITH_CATCH2)
@@ -746,7 +748,8 @@ endif(${WITH_LTTNG})
 option(WITH_OSD_INSTRUMENT_FUNCTIONS OFF)
 
 #option for Babeltrace
-option(WITH_BABELTRACE "Babeltrace libraries are enabled" ON)
+CMAKE_DEPENDENT_OPTION(WITH_BABELTRACE "Babeltrace libraries are enabled" ON
+  "WITH_RBD" OFF)
 if(WITH_BABELTRACE)
   set(HAVE_BABELTRACE ON)
   find_package(babeltrace REQUIRED)
