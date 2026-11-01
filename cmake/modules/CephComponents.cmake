@@ -34,12 +34,14 @@ option(WITH_CEPHFS "CephFS is enabled" ${CEPH_COMPONENT_DEFAULT})
 CMAKE_DEPENDENT_OPTION(WITH_MGR "ceph-mgr is enabled" ${CEPH_COMPONENT_DEFAULT}
   "NOT WIN32" OFF)
 option(WITH_CRIMSON "Build Crimson components" OFF)
+CMAKE_DEPENDENT_OPTION(WITH_PYBIND "Python bindings for the client libraries"
+  ${CEPH_COMPONENT_DEFAULT} "NOT WIN32" OFF)
 option(WITH_TESTS "enable the build of ceph-test package scripts/binaries" ${CEPH_COMPONENT_DEFAULT})
 
 set(_ceph_components
   WITH_MON WITH_OSD WITH_RBD WITH_KRBD WITH_FUSE WITH_LIBCEPHFS
   WITH_LIBCEPHSQLITE WITH_LIBRADOSSTRIPER WITH_RADOSGW WITH_CEPHFS WITH_MGR
-  WITH_CRIMSON WITH_TESTS)
+  WITH_CRIMSON WITH_PYBIND WITH_TESTS)
 set(_ceph_enabled_components)
 foreach(_component ${_ceph_components})
   if(${_component})
