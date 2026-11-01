@@ -1,0 +1,58 @@
+---
+# Check that librados can be configured without any other component, and
+# without the dependencies that only those components need. This runs in a
+# plain container rather than directly on the runner, whose image comes with
+# many development packages preinstalled.
+name: "Check Minimal CMake Configuration"
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**/CMakeLists.txt'
+      - 'cmake/**'
+      - 'src/include/config-h.in.cmake'
+      - '.github/workflows/cmake-components.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  librados:
+    name: "Configure librados only"
+    runs-on: ubuntu-latest
+    container: ubuntu:24.04
+    steps:
+      - name: Install dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ca-certificates cmake g++ git liblz4-dev libssl-dev libzstd-dev \
+            make ninja-build pkg-config python3 python3-yaml zlib1g-dev
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Checkout the submodules librados needs
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git submodule update --init src/BLAKE3 src/fmt src/xxHash
+
+      - name: Configure
+        run: |
+          cmake -G Ninja -S . -B build \
+            -DENABLE_GIT_VERSION=OFF \
+            -DCEPH_COMPONENT_DEFAULT=OFF \
+            -DWITH_JAEGER=OFF \
+            -DWITH_LTTNG=OFF \
+            -DWITH_RDMA=OFF \
+            -DWITH_BREAKPAD=OFF \
+            -DWITH_QATLIB=OFF \
+            -DWITH_QATZIP=OFF \
+            -DWITH_SNAPPY=OFF \
+            -DWITH_MANPAGE=OFF \
+            -DWITH_SYSTEM_ZSTD=ON
