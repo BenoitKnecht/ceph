@@ -217,6 +217,8 @@ if(NOT HAVE_CXX11_ATOMIC)
     " ${LIBATOMIC_LINK_FLAGS}")
 endif()
 
+include(CephComponents)
+
 option(WITH_RDMA "Enable RDMA in async messenger" ON)
 if(WITH_RDMA)
   find_package(verbs REQUIRED)
@@ -227,8 +229,6 @@ if(WITH_RDMA)
 endif()
 
 find_package(Backtrace)
-
-option(WITH_RBD "Enable RADOS Block Device related targets" ON)
 
 if(LINUX)
   find_package(udev REQUIRED)
@@ -259,7 +259,6 @@ if(WITH_GSSAPI)
   set(HAVE_GSSAPI ${GSSApi_FOUND})
 endif()
 
-option(WITH_FUSE "Fuse is here" ON)
 if(WITH_FUSE)
   find_package(FUSE REQUIRED)
   set(HAVE_LIBFUSE ${FUSE_FOUND})
@@ -280,8 +279,6 @@ if(WITH_BLUESTORE)
     set(HAVE_POSIXAIO ON)
   endif()
 endif()
-
-option(WITH_CRIMSON "Build Crimson components" OFF)
 
 if(WITH_BLUESTORE OR WITH_CRIMSON)
   if(LINUX)
@@ -425,10 +422,6 @@ if(WITH_UADK)
   message("HAVE_UADK " ${HAVE_UADK})
 endif(WITH_UADK)
 
-# needs mds and? XXX
-option(WITH_LIBCEPHFS "libcephfs client library" ON)
-
-option(WITH_LIBCEPHSQLITE "libcephsqlite client library" ON)
 if(WITH_LIBCEPHSQLITE)
   find_package(SQLite3 REQUIRED)
 endif()
@@ -436,11 +429,6 @@ endif()
 # key-value store
 option(WITH_KVS "Key value store is here" OFF)
 
-option(WITH_KRBD "Enable Linux krbd support of 'rbd' utility" ON)
-
-if(WITH_KRBD AND NOT WITH_RBD)
-  message(FATAL_ERROR "Cannot have WITH_KRBD without WITH_RBD.")
-endif()
 if(LINUX)
   if(WITH_LIBCEPHFS OR WITH_KRBD)
     # keyutils is only used when talking to the Linux Kernel key store 
@@ -593,7 +581,6 @@ if(WITH_BREAKPAD)
 endif()
 
 #option for RGW
-option(WITH_RADOSGW "RADOS Gateway is enabled" ON)
 option(WITH_RADOSGW_BEAST_OPENSSL "RADOS Gateway's Beast frontend uses OpenSSL" ON)
 option(WITH_RADOSGW_AMQP_ENDPOINT "RADOS Gateway's pubsub support for AMQP push endpoint" ON)
 option(WITH_RADOSGW_KAFKA_ENDPOINT "RADOS Gateway's pubsub support for Kafka push endpoint" ON)
@@ -702,9 +689,6 @@ if(WITH_RADOSGW_FDB)
 
 endif()
 
-#option for CephFS
-option(WITH_CEPHFS "CephFS is enabled" ON)
-
 if(NOT WIN32)
 # Please specify 3.x if you want to build with a certain version of python3.
 set(WITH_PYTHON3 "3" CACHE STRING "build with specified python3 version")
@@ -714,7 +698,6 @@ if(Python3_VERSION VERSION_LESS 3.9)
   message(FATAL_ERROR "${Python3_VERSION} is not supported, please use Python 3.9 and up")
 endif()
 
-option(WITH_MGR "ceph-mgr is enabled" ON)
 if(WITH_MGR)
   set(MGR_PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
   set(MGR_PYTHON_LIBRARIES ${Python3_LIBRARIES})
@@ -766,7 +749,6 @@ endif(WITH_BABELTRACE)
 option(DEBUG_GATHER "C_Gather debugging is enabled" ON)
 option(PG_DEBUG_REFS "PG Ref debugging is enabled" OFF)
 
-option(WITH_TESTS "enable the build of ceph-test package scripts/binaries" ON)
 set(UNIT_TESTS_BUILT ${WITH_TESTS})
 set(CEPH_TEST_TIMEOUT 7200 CACHE STRING
   "Maximum time before a CTest gets killed" )
