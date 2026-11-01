@@ -25,7 +25,9 @@ endif()
 
 set(compressor_plugin_dir ${CEPH_INSTALL_PKGLIBDIR}/compressor)
 
-add_subdirectory(snappy)
+if(HAVE_SNAPPY)
+  add_subdirectory(snappy)
+endif()
 add_subdirectory(zlib)
 add_subdirectory(zstd)
 
@@ -41,9 +43,12 @@ add_library(compressor STATIC)
 target_link_libraries(compressor PUBLIC compressor_objs)
 
 set(ceph_compressor_libs
-    ceph_snappy
     ceph_zlib
     ceph_zstd)
+
+if(HAVE_SNAPPY)
+  list(APPEND ceph_compressor_libs ceph_snappy)
+endif()
 
 if(HAVE_LZ4)
   list(APPEND ceph_compressor_libs ceph_lz4)

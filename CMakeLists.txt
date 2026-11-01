@@ -439,7 +439,11 @@ if(LINUX)
   endif()
 endif()
 
-find_package(snappy REQUIRED)
+option(WITH_SNAPPY "Snappy compression support" ON)
+if(WITH_SNAPPY)
+  find_package(snappy REQUIRED)
+  set(HAVE_SNAPPY ${SNAPPY_FOUND})
+endif()
 
 option(WITH_BROTLI "Brotli compression support" OFF)
 if(WITH_BROTLI)
