@@ -1,4 +1,4 @@
-if(${WITH_CEPHFS})
+if(WITH_CEPHFS AND WITH_LIBCEPHFS)
   add_executable(ceph_test_client
     main.cc
     alternate_name.cc
@@ -57,4 +57,4 @@ if(${WITH_CEPHFS})
     )
   install(TARGETS ceph_test_client_async_full
     DESTINATION ${CMAKE_INSTALL_BINDIR})
-endif(${WITH_CEPHFS})
+endif()

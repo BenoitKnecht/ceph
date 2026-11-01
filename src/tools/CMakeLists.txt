@@ -119,7 +119,9 @@ install(TARGETS ceph-authtool DESTINATION bin)
 
 if(WITH_CEPHFS)
   add_subdirectory(cephfs)
-  add_subdirectory(cephfs_mirror)
+  if(WITH_LIBCEPHFS)
+    add_subdirectory(cephfs_mirror)
+  endif()
 endif(WITH_CEPHFS)
 
 if(WITH_RBD)

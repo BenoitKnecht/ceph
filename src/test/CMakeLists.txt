@@ -591,14 +591,14 @@ if(WITH_FUSE)
   )
 endif(WITH_FUSE)
 
-if(${WITH_CEPHFS})
+if(WITH_CEPHFS AND WITH_LIBCEPHFS)
   add_executable(test_c_headers
     test_c_headers.c
     )
   target_link_libraries(test_c_headers
     librados
     cephfs)
-endif(${WITH_CEPHFS})
+endif()
 
 if(HAVE_BLKID OR FREEBSD)
   add_executable(ceph_test_get_blkdev_props
@@ -658,7 +658,10 @@ if (WITH_BLUESTORE)
   add_dependencies(tests ceph_test_bluefs)
 endif()
 if (WITH_CEPHFS)
-  add_dependencies(tests ceph-mds cephfs-tool)
+  add_dependencies(tests ceph-mds)
+  if (WITH_LIBCEPHFS)
+    add_dependencies(tests cephfs-tool)
+  endif()
 endif()
 if(WITH_MGR)
   add_dependencies(tests ceph-mgr)

@@ -5,7 +5,9 @@ if(${WITH_CEPHFS})
     )
   add_ceph_unittest(unittest_mds_types)
   target_link_libraries(unittest_mds_types global)
+endif(${WITH_CEPHFS})
 
+if(WITH_CEPHFS AND WITH_LIBCEPHFS)
   add_executable(ceph_test_trim_caps
     test_trim_caps.cc
   )
@@ -29,4 +31,4 @@ if(${WITH_CEPHFS})
     target_link_options(ceph_test_ino_release_cb PRIVATE -Wl,--copy-dt-needed-entries)
   endif()
   install(TARGETS ceph_test_ino_release_cb DESTINATION ${CMAKE_INSTALL_BINDIR})
-endif(${WITH_CEPHFS})
+endif()
