@@ -654,8 +654,10 @@ install(TARGETS
 add_dependencies(tests
   ceph-authtool
   ceph-conf
-  rados
-  ceph_snappy)
+  rados)
+if(HAVE_SNAPPY)
+  add_dependencies(tests ceph_snappy)
+endif()
 if(NOT WIN32)
   # Not currently supported on Windows
   add_dependencies(tests
@@ -663,7 +665,6 @@ if(NOT WIN32)
   ceph-dencoder-modules
   osdmaptool
   ceph_example
-  ceph_snappy
   crushtool
   monmaptool)
 if(CEPH_NEED_CLS_PLUGINS)
