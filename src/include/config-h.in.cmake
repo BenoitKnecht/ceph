@@ -90,6 +90,9 @@
 /* Defined if you have libblkid */
 #cmakedefine HAVE_BLKID
 
+/* Defined if you have libkeyutils */
+#cmakedefine HAVE_KEYUTILS
+
 /* Defined if you have liburing */
 #cmakedefine HAVE_LIBURING
 
