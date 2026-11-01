@@ -8,6 +8,7 @@ if(HAVE_BLKID)
 endif()
 
 add_library(extblkdev STATIC ExtBlkDevPlugin.cc)
+target_link_libraries(extblkdev legacy-option-headers)
 
 if(LINUX)
   find_package(cap REQUIRED)
