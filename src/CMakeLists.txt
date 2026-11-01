@@ -747,8 +747,6 @@ add_library(rados_snap_set_diff_obj OBJECT librados/snap_set_diff.cc)
 target_link_libraries(rados_snap_set_diff_obj
   PRIVATE legacy-option-headers)
 
-option(WITH_LIBRADOSSTRIPER "build with libradosstriper support" ON)
-
 add_subdirectory(include)
 add_subdirectory(librados)
 add_subdirectory(neorados)
