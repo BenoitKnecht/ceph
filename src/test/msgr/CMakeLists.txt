@@ -3,13 +3,13 @@ add_executable(ceph_test_async_driver
   test_async_driver.cc
   $<TARGET_OBJECTS:unit-main>
   )
-target_link_libraries(ceph_test_async_driver os global ${BLKID_LIBRARIES} ${CMAKE_DL_LIBS} ${UNITTEST_LIBS})
+target_link_libraries(ceph_test_async_driver global ${BLKID_LIBRARIES} ${CMAKE_DL_LIBS} ${UNITTEST_LIBS})
 
 # ceph_test_msgr
 add_executable(ceph_test_msgr
   test_msgr.cc
   )
-target_link_libraries(ceph_test_msgr os global ${BLKID_LIBRARIES} ${CMAKE_DL_LIBS} ${UNITTEST_LIBS})
+target_link_libraries(ceph_test_msgr global ${BLKID_LIBRARIES} ${CMAKE_DL_LIBS} ${UNITTEST_LIBS})
 
 # ceph_test_async_networkstack
 add_executable(ceph_test_async_networkstack
@@ -20,16 +20,16 @@ target_link_libraries(ceph_test_async_networkstack global ${CRYPTO_LIBS} ${BLKID
 
 #ceph_perf_msgr_server
 add_executable(ceph_perf_msgr_server perf_msgr_server.cc)
-target_link_libraries(ceph_perf_msgr_server os global ${UNITTEST_LIBS})
+target_link_libraries(ceph_perf_msgr_server global ${UNITTEST_LIBS})
 
 #ceph_perf_msgr_client
 add_executable(ceph_perf_msgr_client perf_msgr_client.cc)
-target_link_libraries(ceph_perf_msgr_client os global ${UNITTEST_LIBS})
+target_link_libraries(ceph_perf_msgr_client global ${UNITTEST_LIBS})
 
 # unitttest_frames_v2
 add_executable(unittest_frames_v2 test_frames_v2.cc)
 add_ceph_unittest(unittest_frames_v2)
-target_link_libraries(unittest_frames_v2 os global ${UNITTEST_LIBS})
+target_link_libraries(unittest_frames_v2 global ${UNITTEST_LIBS})
 
 add_executable(unittest_comp_registry
   test_comp_registry.cc

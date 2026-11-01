@@ -21,22 +21,28 @@ if(HAVE_INTEL)
  list(APPEND jerasure_legacy_flavors sse3 sse4)
 endif()
 
-add_subdirectory(jerasure)
-add_subdirectory(lrc)
-add_subdirectory(shec)
-add_subdirectory(clay)
-add_subdirectory(consistency)
-
-if(WITH_EC_ISA_PLUGIN)
-  add_subdirectory(isa)
-  set(EC_ISA_LIB ec_isa)
-endif()
-
 add_library(erasure_code OBJECT ErasureCodePlugin.cc)
 target_link_libraries(erasure_code $<$<PLATFORM_ID:Windows>:dlfcn_win32>
                       ${CMAKE_DL_LIBS})
 
 add_library(erasure_code_objs OBJECT ErasureCode.cc)
+
+# only uses librados, and is needed by librados tests
+add_subdirectory(consistency)
+
+if(NOT CEPH_NEED_EC_PLUGINS)
+  return()
+endif()
+
+add_subdirectory(jerasure)
+add_subdirectory(lrc)
+add_subdirectory(shec)
+add_subdirectory(clay)
+
+if(WITH_EC_ISA_PLUGIN)
+  add_subdirectory(isa)
+  set(EC_ISA_LIB ec_isa)
+endif()
 
 add_custom_target(erasure_code_plugins DEPENDS
     ${EC_ISA_LIB}
