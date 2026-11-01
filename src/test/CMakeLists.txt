@@ -59,7 +59,10 @@ if(NOT WIN32)
   add_subdirectory(cls_cmpomap)
   add_subdirectory(cls_fifo)
   add_subdirectory(cls_sem_set)
-  add_subdirectory(journal)
+  if(CEPH_NEED_CLS_PLUGINS)
+    # the journal tests link against cls_journal
+    add_subdirectory(journal)
+  endif()
 
   if(CEPH_NEED_EC_PLUGINS)
     add_subdirectory(erasure-code)
@@ -661,9 +664,11 @@ if(NOT WIN32)
   osdmaptool
   ceph_example
   ceph_snappy
-  cls_lock
   crushtool
   monmaptool)
+if(CEPH_NEED_CLS_PLUGINS)
+  add_dependencies(tests cls_lock)
+endif()
 if(WITH_PYBIND)
   add_dependencies(tests cython_modules)
 endif()

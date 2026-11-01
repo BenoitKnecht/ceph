@@ -71,3 +71,11 @@ if(WITH_MON OR WITH_OSD OR WITH_CRIMSON)
 else()
   set(CEPH_NEED_EC_PLUGINS FALSE)
 endif()
+
+# object classes, loaded by the OSDs, and by some tests through
+# librados_test_stub; other components only need their client libraries
+if(WITH_OSD OR WITH_CRIMSON OR WITH_TESTS)
+  set(CEPH_NEED_CLS_PLUGINS TRUE)
+else()
+  set(CEPH_NEED_CLS_PLUGINS FALSE)
+endif()
