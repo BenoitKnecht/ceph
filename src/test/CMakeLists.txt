@@ -61,21 +61,31 @@ if(NOT WIN32)
   add_subdirectory(cls_sem_set)
   add_subdirectory(journal)
 
-  add_subdirectory(erasure-code)
+  if(CEPH_NEED_EC_PLUGINS)
+    add_subdirectory(erasure-code)
+  endif()
   add_subdirectory(fs)
   add_subdirectory(libcephsqlite)
   add_subdirectory(client)
-  add_subdirectory(mon)
+  if(WITH_MON)
+    add_subdirectory(mon)
+  endif()
   if(WITH_MGR)
     add_subdirectory(mgr)
   endif()
   add_subdirectory(msgr)
   add_subdirectory(neorados)
-  add_subdirectory(objectstore)
-  add_subdirectory(ObjectMap)
-  add_subdirectory(osd)
+  if(CEPH_NEED_OBJECTSTORE)
+    add_subdirectory(objectstore)
+    add_subdirectory(ObjectMap)
+  endif()
+  if(WITH_OSD AND WITH_MON)
+    add_subdirectory(osd)
+  endif()
   add_subdirectory(osdc)
-  add_subdirectory(immutable_object_cache)
+  if(WITH_RBD)
+    add_subdirectory(immutable_object_cache)
+  endif()
   add_subdirectory(exporter)
 endif(NOT WIN32)
 
@@ -150,7 +160,13 @@ endif(WITH_LIBCEPHFS)
 add_executable(test_build_librados buildtest_skeleton.cc)
 target_link_libraries(test_build_librados librados pthread ${CRYPTO_LIBS} ${EXTRALIBS} ceph-common ${BLKID_LIBRARIES})
 if(NOT WIN32)
-  target_link_libraries(test_build_librados os osdc osd cls_lock_client)
+  target_link_libraries(test_build_librados osdc cls_lock_client)
+  if(CEPH_NEED_OBJECTSTORE)
+    target_link_libraries(test_build_librados os)
+  endif()
+  if(WITH_OSD)
+    target_link_libraries(test_build_librados osd)
+  endif()
 endif()
 
 # bench_log
@@ -199,10 +215,11 @@ target_link_libraries(ceph_omapbench
   ceph-common
   Boost::program_options)
 
-if(NOT WIN32)
+if(NOT WIN32 AND CEPH_NEED_OBJECTSTORE)
   # ceph_objectstore_bench
   add_executable(ceph_objectstore_bench objectstore_bench.cc)
   target_link_libraries(ceph_objectstore_bench os global ${BLKID_LIBRARIES})
+  install(TARGETS ceph_objectstore_bench DESTINATION bin)
 endif()
 
 if(${WITH_RADOSGW})
@@ -528,26 +545,29 @@ endif()
 target_link_libraries(ceph_perf_local global ${UNITTEST_LIBS})
 
 install(TARGETS
-  ceph_objectstore_bench
   ceph_perf_local
   DESTINATION bin)
 
-# ceph_test_keys
-add_executable(ceph_test_keys
-  testkeys.cc
-  )
-target_link_libraries(ceph_test_keys mon global ${CMAKE_DL_LIBS})
+if(WITH_MON)
+  # ceph_test_keys
+  add_executable(ceph_test_keys
+    testkeys.cc
+    )
+  target_link_libraries(ceph_test_keys mon global ${CMAKE_DL_LIBS})
+endif()
 
-# ceph_test_snap_mapper
-add_executable(ceph_test_snap_mapper
-  test_snap_mapper.cc
-  $<TARGET_OBJECTS:unit-main>
-  )
-target_link_libraries(ceph_test_snap_mapper osd global ${BLKID_LIBRARIES} ${UNITTEST_LIBS})
+if(WITH_OSD)
+  # ceph_test_snap_mapper
+  add_executable(ceph_test_snap_mapper
+    test_snap_mapper.cc
+    $<TARGET_OBJECTS:unit-main>
+    )
+  target_link_libraries(ceph_test_snap_mapper osd global ${BLKID_LIBRARIES} ${UNITTEST_LIBS})
 
-install(TARGETS
-  ceph_test_snap_mapper
-  DESTINATION ${CMAKE_INSTALL_BINDIR})
+  install(TARGETS
+    ceph_test_snap_mapper
+    DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
 endif(NOT WIN32)
 
 add_executable(ceph_test_stress_watch
@@ -636,23 +656,27 @@ add_dependencies(tests
 if(NOT WIN32)
   # Not currently supported on Windows
   add_dependencies(tests
-  ceph-mon
-  get_command_descriptions
   ceph-dencoder
   ceph-dencoder-modules
-  ceph-objectstore-tool
-  ceph-kvstore-tool
-  ceph-monstore-tool
-  ceph-osd
   osdmaptool
   ceph_example
   ceph_snappy
   cls_lock
-  ceph_test_objectstore
-  ceph_erasure_code_non_regression
   cython_modules
   crushtool
   monmaptool)
+if(WITH_MON)
+  add_dependencies(tests ceph-mon ceph-monstore-tool get_command_descriptions)
+endif()
+if(WITH_OSD)
+  add_dependencies(tests ceph-osd ceph-objectstore-tool)
+endif()
+if(CEPH_NEED_OBJECTSTORE)
+  add_dependencies(tests ceph-kvstore-tool ceph_test_objectstore)
+endif()
+if(CEPH_NEED_EC_PLUGINS)
+  add_dependencies(tests ceph_erasure_code_non_regression)
+endif()
 
 if (WITH_BLUESTORE)
   add_dependencies(tests ceph_test_bluefs)
@@ -1087,13 +1111,15 @@ add_catch2_test(concepts)
 
 #make check ends here
 
-# test_nvmeof_mon_encoding
-add_executable(test_nvmeof_mon_encoding
-  test_nvmeof_mon_encoding.cc
-  )
-target_link_libraries(test_nvmeof_mon_encoding
-  mon ceph-common global-static
-  )
+if(WITH_MON)
+  # test_nvmeof_mon_encoding
+  add_executable(test_nvmeof_mon_encoding
+    test_nvmeof_mon_encoding.cc
+    )
+  target_link_libraries(test_nvmeof_mon_encoding
+    mon ceph-common global-static
+    )
+endif()
 
 
 if(WITH_BREAKPAD)
@@ -1127,10 +1153,12 @@ else()
   message(STATUS "The google/benchmark library was not found. Skipping micro benchmark tests")
 endif(benchmark_FOUND)
 
-add_executable(test_nvmeof_gw_utils
-  test_nvmeof_gw_utils.cc
-  ../nvmeof/NVMeofGwUtils.cc
-  )
-target_link_libraries(test_nvmeof_gw_utils
-  mon ceph-common global-static
-  )
+if(WITH_MON)
+  add_executable(test_nvmeof_gw_utils
+    test_nvmeof_gw_utils.cc
+    ../nvmeof/NVMeofGwUtils.cc
+    )
+  target_link_libraries(test_nvmeof_gw_utils
+    mon ceph-common global-static
+    )
+endif()

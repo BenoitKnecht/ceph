@@ -42,21 +42,25 @@ install(PROGRAMS
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/ceph)
 endif(WITH_TESTS)
 
-add_executable(ceph-monstore-tool
-  ceph_monstore_tool.cc
-  ../mgr/mgr_commands.cc)
-target_link_libraries(ceph-monstore-tool kv os global Boost::program_options)
-install(TARGETS ceph-monstore-tool DESTINATION bin)
+if(WITH_MON)
+  add_executable(ceph-monstore-tool
+    ceph_monstore_tool.cc
+    ../mgr/mgr_commands.cc)
+  target_link_libraries(ceph-monstore-tool kv os global Boost::program_options)
+  install(TARGETS ceph-monstore-tool DESTINATION bin)
+endif()
 
-add_executable(ceph-objectstore-tool
-  ceph_objectstore_tool.cc
-  rebuild_mondb.cc
-  RadosDump.cc)
-target_link_libraries(ceph-objectstore-tool osd kv os global Boost::program_options ${CMAKE_DL_LIBS})
-if(WITH_FUSE)
-  target_link_libraries(ceph-objectstore-tool FUSE::FUSE)
-endif(WITH_FUSE)
-install(TARGETS ceph-objectstore-tool DESTINATION bin)
+if(WITH_OSD)
+  add_executable(ceph-objectstore-tool
+    ceph_objectstore_tool.cc
+    rebuild_mondb.cc
+    RadosDump.cc)
+  target_link_libraries(ceph-objectstore-tool osd kv os global Boost::program_options ${CMAKE_DL_LIBS})
+  if(WITH_FUSE)
+    target_link_libraries(ceph-objectstore-tool FUSE::FUSE)
+  endif(WITH_FUSE)
+  install(TARGETS ceph-objectstore-tool DESTINATION bin)
+endif()
 
 if(WITH_LIBCEPHFS)
 if(WITH_TESTS)
@@ -66,13 +70,15 @@ if(WITH_TESTS)
 endif(WITH_TESTS)
 endif(WITH_LIBCEPHFS)
 
-add_executable(ceph-kvstore-tool
-  kvstore_tool.cc
-  ceph_kvstore_tool.cc)
-target_link_libraries(ceph-kvstore-tool
-  legacy-option-headers kv
-  os global)
-install(TARGETS ceph-kvstore-tool DESTINATION bin)
+if(CEPH_NEED_OBJECTSTORE)
+  add_executable(ceph-kvstore-tool
+    kvstore_tool.cc
+    ceph_kvstore_tool.cc)
+  target_link_libraries(ceph-kvstore-tool
+    legacy-option-headers kv
+    os global)
+  install(TARGETS ceph-kvstore-tool DESTINATION bin)
+endif()
 
 set(ceph_conf_srcs ceph_conf.cc)
 add_executable(ceph-conf ${ceph_conf_srcs})
@@ -136,9 +142,13 @@ if(WITH_RBD)
   endif()
 endif(WITH_RBD)
 
-add_subdirectory(immutable_object_cache)
+if(WITH_RBD)
+  add_subdirectory(immutable_object_cache)
+endif()
 add_subdirectory(ceph-dencoder)
-add_subdirectory(erasure-code)
+if(CEPH_NEED_EC_PLUGINS)
+  add_subdirectory(erasure-code)
+endif()
 add_subdirectory(ceph_dedup)
 if(WITH_RADOSGW)
   add_subdirectory(rgw)

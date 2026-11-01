@@ -44,13 +44,15 @@ target_link_libraries(denc-mod-common
   cls_lock_client
   cls_refcount_client
   cls_timeindex_client)
-add_denc_mod(denc-mod-osd
-  osd_types.cc)
-target_link_libraries(denc-mod-osd
-  os
-  osd
-  mon
-  global)
+if(WITH_MON AND WITH_OSD)
+  add_denc_mod(denc-mod-osd
+    osd_types.cc)
+  target_link_libraries(denc-mod-osd
+    os
+    osd
+    mon
+    global)
+endif()
 
 if(WITH_RADOSGW)
   add_denc_mod(denc-mod-rgw

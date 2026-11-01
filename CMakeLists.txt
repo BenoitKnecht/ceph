@@ -272,7 +272,8 @@ if(WITH_XFS)
   set(HAVE_LIBXFS ${XFS_FOUND})
 endif()
 
-option(WITH_BLUESTORE "Bluestore OSD backend" ON)
+CMAKE_DEPENDENT_OPTION(WITH_BLUESTORE "Bluestore OSD backend" ON
+  "CEPH_NEED_OBJECTSTORE" OFF)
 if(WITH_BLUESTORE)
   if(FREEBSD)
     # POSIX AIO is integrated into FreeBSD kernel, and exposed by libc.
@@ -833,8 +834,11 @@ endif()
 
 # Rocksdb
 option(WITH_SYSTEM_ROCKSDB "require and build with system rocksdb" OFF)
-if (WITH_SYSTEM_ROCKSDB)
-  find_package(RocksDB 9.10 REQUIRED)
+if(WITH_SYSTEM_ROCKSDB)
+  # ceph-mgr only needs RocksDB's version header
+  if(CEPH_NEED_OBJECTSTORE OR WITH_MGR)
+    find_package(RocksDB 9.10 REQUIRED)
+  endif()
 else()
   # westmere is the oldest microarchitecture with the SSE4.2 and PCLMULQDQ
   # that RocksDB's CRC32C needs. set to ON to target the x86-64 baseline.

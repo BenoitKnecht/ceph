@@ -19,6 +19,9 @@ include(CMakeDependentOption)
 
 option(CEPH_COMPONENT_DEFAULT "Default value of the WITH_<component> options" ON)
 
+option(WITH_MON "ceph-mon is enabled" ${CEPH_COMPONENT_DEFAULT})
+CMAKE_DEPENDENT_OPTION(WITH_OSD "ceph-osd is enabled" ${CEPH_COMPONENT_DEFAULT}
+  "NOT WIN32" OFF)
 option(WITH_RBD "Enable RADOS Block Device related targets" ${CEPH_COMPONENT_DEFAULT})
 CMAKE_DEPENDENT_OPTION(WITH_KRBD "Enable Linux krbd support of 'rbd' utility" ON
   "WITH_RBD" OFF)
@@ -34,9 +37,9 @@ option(WITH_CRIMSON "Build Crimson components" OFF)
 option(WITH_TESTS "enable the build of ceph-test package scripts/binaries" ${CEPH_COMPONENT_DEFAULT})
 
 set(_ceph_components
-  WITH_RBD WITH_KRBD WITH_FUSE WITH_LIBCEPHFS WITH_LIBCEPHSQLITE
-  WITH_LIBRADOSSTRIPER WITH_RADOSGW WITH_CEPHFS WITH_MGR WITH_CRIMSON
-  WITH_TESTS)
+  WITH_MON WITH_OSD WITH_RBD WITH_KRBD WITH_FUSE WITH_LIBCEPHFS
+  WITH_LIBCEPHSQLITE WITH_LIBRADOSSTRIPER WITH_RADOSGW WITH_CEPHFS WITH_MGR
+  WITH_CRIMSON WITH_TESTS)
 set(_ceph_enabled_components)
 foreach(_component ${_ceph_components})
   if(${_component})
@@ -50,3 +53,19 @@ unset(_ceph_components)
 unset(_ceph_enabled_components)
 unset(_component)
 unset(_name)
+
+# Internal libraries shared by several components
+
+# kv, os and RocksDB
+if(WITH_MON OR WITH_OSD OR WITH_CRIMSON)
+  set(CEPH_NEED_OBJECTSTORE TRUE)
+else()
+  set(CEPH_NEED_OBJECTSTORE FALSE)
+endif()
+
+# erasure code plugins
+if(WITH_MON OR WITH_OSD OR WITH_CRIMSON)
+  set(CEPH_NEED_EC_PLUGINS TRUE)
+else()
+  set(CEPH_NEED_EC_PLUGINS FALSE)
+endif()

@@ -757,10 +757,10 @@ endif()
 
 # make rocksdb statically
 
-if(NOT WITH_SYSTEM_ROCKSDB)
+if(CEPH_NEED_OBJECTSTORE AND NOT WITH_SYSTEM_ROCKSDB)
   include(BuildRocksDB)
   build_rocksdb()
-endif(NOT WITH_SYSTEM_ROCKSDB)
+endif()
 
 if(WITH_MGR)
   add_subdirectory(mgr)
@@ -794,18 +794,20 @@ add_subdirectory(python-common)
 endif(NOT WIN32)
 
 # Monitor
-add_subdirectory(mon)
-set(ceph_mon_srcs
-  ceph_mon.cc)
-add_executable(ceph-mon ${ceph_mon_srcs}
-  $<TARGET_OBJECTS:common_texttable_obj>)
-add_dependencies(ceph-mon erasure_code_plugins)
-target_link_libraries(ceph-mon mon os global-static ceph-common
-  ${ALLOC_LIBS}
-  ${EXTRALIBS}
-  ${CMAKE_DL_LIBS}
-  ${GSSAPI_LIBRARIES})
-install(TARGETS ceph-mon DESTINATION bin)
+if(WITH_MON)
+  add_subdirectory(mon)
+  set(ceph_mon_srcs
+    ceph_mon.cc)
+  add_executable(ceph-mon ${ceph_mon_srcs}
+    $<TARGET_OBJECTS:common_texttable_obj>)
+  add_dependencies(ceph-mon erasure_code_plugins)
+  target_link_libraries(ceph-mon mon os global-static ceph-common
+    ${ALLOC_LIBS}
+    ${EXTRALIBS}
+    ${CMAKE_DL_LIBS}
+    ${GSSAPI_LIBRARIES})
+  install(TARGETS ceph-mon DESTINATION bin)
+endif()
 
 # OSD/ObjectStore
 
@@ -815,11 +817,17 @@ if(NOT CEPH_BIG_ENDIAN)
   set(CEPH_LITTLE_ENDIAN 1)
 endif()
 
-add_subdirectory(kv)
-add_subdirectory(os)
+if(CEPH_NEED_OBJECTSTORE)
+  add_subdirectory(kv)
+  add_subdirectory(os)
+endif()
 
-if(NOT WIN32)
-add_subdirectory(blk)
+# blk is also used by librbd's persistent write-back cache plugin
+if(NOT WIN32 AND (CEPH_NEED_OBJECTSTORE OR WITH_RBD_RWL OR WITH_RBD_SSD_CACHE))
+  add_subdirectory(blk)
+endif()
+
+if(WITH_OSD)
 add_subdirectory(osd)
 
 set(ceph_osd_srcs
@@ -844,7 +852,7 @@ set_target_properties(ceph-osd PROPERTIES
   INSTALL_RPATH "")
 install(TARGETS ceph-osd DESTINATION bin)
 
-endif(NOT WIN32)
+endif(WITH_OSD)
 
 if (WITH_CEPHFS)
   add_subdirectory(mds)
@@ -1011,7 +1019,9 @@ if(WITH_FUSE)
 endif(WITH_FUSE)
 
 # NVMEOF GATEWAY MONITOR CLIENT
-option(WITH_NVMEOF_GATEWAY_MONITOR_CLIENT "build nvmeof gateway monitor client" ON)
+CMAKE_DEPENDENT_OPTION(WITH_NVMEOF_GATEWAY_MONITOR_CLIENT
+  "build nvmeof gateway monitor client" ON
+  "WITH_MON" OFF)
 
 if(WITH_NVMEOF_GATEWAY_MONITOR_CLIENT)
 
@@ -1200,14 +1210,14 @@ configure_file(
 
 # Everything you need to spin up a cluster with vstart.sh
 add_custom_target(vstart-base DEPENDS
-    ceph-osd
-    ceph-mon
     ceph-authtool
     ceph-conf
     monmaptool
     crushtool
     rados)
 foreach(dep
+    ceph-osd
+    ceph-mon
     cython_rados
     ceph-mgr
     ceph-exporter)

@@ -45,8 +45,14 @@ if(WITH_MGR)
   if(WITH_LIBCEPHSQLITE)
     target_link_libraries(ceph-mgr cephsqlite SQLite3::SQLite3)
   endif()
-  target_include_directories(ceph-mgr PRIVATE
-    $<TARGET_PROPERTY:RocksDB::RocksDB,INTERFACE_INCLUDE_DIRECTORIES>)
+  # ceph-mgr only needs RocksDB's version header
+  if(TARGET RocksDB::RocksDB)
+    target_include_directories(ceph-mgr PRIVATE
+      $<TARGET_PROPERTY:RocksDB::RocksDB,INTERFACE_INCLUDE_DIRECTORIES>)
+  else()
+    target_include_directories(ceph-mgr PRIVATE
+      ${CMAKE_SOURCE_DIR}/src/rocksdb/include)
+  endif()
   target_link_libraries(ceph-mgr
     osdc heap_profiler
     global-static ceph-common

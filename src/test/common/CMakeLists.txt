@@ -1,4 +1,4 @@
-if(NOT WIN32)
+if(NOT WIN32 AND WITH_MON)
 # get_command_descriptions
 # libmon not currently available on Windows.
 add_executable(get_command_descriptions
@@ -12,7 +12,7 @@ target_link_libraries(get_command_descriptions
   ${BLKID_LIBRARIES}
   ${CMAKE_DL_LIBS}
   )
-endif(NOT WIN32)
+endif()
 
 # Though FreeBSD has blkdev support, the unittests' mocks only work in Linux
 if(HAVE_BLKID AND LINUX)
