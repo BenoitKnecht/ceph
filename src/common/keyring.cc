@@ -17,7 +17,9 @@
 
 #include <memory>
 
-#if defined(__linux__)
+#include "acconfig.h"
+
+#if defined(__linux__) && defined(HAVE_KEYUTILS)
 extern "C" {
 #include <keyutils.h>
 }
@@ -26,7 +28,7 @@ extern "C" {
 namespace ceph {
 
 std::unique_ptr<Keyring> Keyring::get_best() {
-#if defined(__linux__)
+#if defined(__linux__) && defined(HAVE_KEYUTILS)
   return std::make_unique<LinuxKeyring>();
 #else
   return std::make_unique<UnsupportedKeyring>();
@@ -59,7 +61,7 @@ bool UnsupportedKeyring::supported(std::error_code* ec) noexcept {
   return false;
 }
 
-#if defined(__linux__)
+#if defined(__linux__) && defined(HAVE_KEYUTILS)
 
 LinuxKeyringSecret::LinuxKeyringSecret(key_serial_t serial, size_t len) noexcept
     : _len(len), _serial(serial) {}

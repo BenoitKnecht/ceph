@@ -1145,10 +1145,12 @@ if (benchmark_FOUND)
   )
   target_link_libraries(bench_lrus ceph-common global-static benchmark::benchmark Boost::context)
 
-  add_executable(bench_secmem
-  bench_secmem.cc
-  )
-  target_link_libraries(bench_secmem ceph-common global-static benchmark::benchmark keyutils::keyutils)
+  if(HAVE_KEYUTILS)
+    add_executable(bench_secmem
+    bench_secmem.cc
+    )
+    target_link_libraries(bench_secmem ceph-common global-static benchmark::benchmark keyutils::keyutils)
+  endif()
 else()
   message(STATUS "The google/benchmark library was not found. Skipping micro benchmark tests")
 endif(benchmark_FOUND)
