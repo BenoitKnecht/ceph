@@ -150,6 +150,33 @@ run a command of the following form:
 
 	cmake -DWITH_RADOSGW=OFF [path to top-level ceph directory]
 
+#### Building individual components
+
+All of Ceph's components are built by default, and each of them can be
+disabled with its own option: `WITH_MON`, `WITH_OSD`, `WITH_MGR`, `WITH_CEPHFS`
+(the MDS), `WITH_LIBCEPHFS`, `WITH_FUSE`, `WITH_RADOSGW`, `WITH_RBD`,
+`WITH_LIBCEPHSQLITE`, `WITH_LIBRADOSSTRIPER`, `WITH_PYBIND` (the Python
+bindings) and `WITH_TESTS`. The dependencies that are only needed by disabled
+components are not required.
+
+To build only a few components, use `CEPH_COMPONENT_DEFAULT` to disable all of
+them by default, and enable the ones you need. For example, to build only the
+RADOS Gateway (librados and the basic command-line tools are always built), run
+a command of the following form:
+
+	cmake -DCEPH_COMPONENT_DEFAULT=OFF -DWITH_RADOSGW=ON [path to top-level ceph directory]
+
+`CEPH_COMPONENT_DEFAULT` only affects components that are not yet in the CMake
+cache, so set it when configuring a new build directory.
+
+Some optional features, such as tracing or hardware acceleration, also have
+dependencies of their own. To build librados with as few dependencies as
+possible, disable them as well:
+
+	cmake -DCEPH_COMPONENT_DEFAULT=OFF -DWITH_JAEGER=OFF -DWITH_LTTNG=OFF \
+	      -DWITH_RDMA=OFF -DWITH_BREAKPAD=OFF -DWITH_QATLIB=OFF -DWITH_QATZIP=OFF \
+	      -DWITH_SNAPPY=OFF -DWITH_MANPAGE=OFF [path to top-level ceph directory]
+
 #### Building with debugging and arbitrary dependency locations 
 
 Run a command of the following form to build Ceph with debugging and alternate
