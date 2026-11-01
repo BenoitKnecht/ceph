@@ -595,7 +595,12 @@ add_subdirectory(common)
 add_subdirectory(crush)
 add_subdirectory(msg)
 add_subdirectory(arch)
-add_subdirectory(extblkdev)
+# block device support, used by the OSD and MON, and by librbd's persistent
+# write-back cache
+if(NOT WIN32 AND (CEPH_NEED_OBJECTSTORE OR WITH_RBD_RWL OR WITH_RBD_SSD_CACHE))
+  set(CEPH_NEED_BLK TRUE)
+  add_subdirectory(extblkdev)
+endif()
 
 set(ceph_common_objs
   $<TARGET_OBJECTS:common-auth-objs>
@@ -611,7 +616,7 @@ set(ceph_common_objs
   $<TARGET_OBJECTS:json_spirit>
   $<TARGET_OBJECTS:erasure_code>)
 set(ceph_common_deps
-  common_utf8 extblkdev arch crc32
+  common_utf8 arch crc32
   ${LIB_RESOLV}
   Boost::thread
   Boost::context
@@ -822,8 +827,7 @@ if(CEPH_NEED_OBJECTSTORE)
   add_subdirectory(os)
 endif()
 
-# blk is also used by librbd's persistent write-back cache plugin
-if(NOT WIN32 AND (CEPH_NEED_OBJECTSTORE OR WITH_RBD_RWL OR WITH_RBD_SSD_CACHE))
+if(CEPH_NEED_BLK)
   add_subdirectory(blk)
 endif()
 
