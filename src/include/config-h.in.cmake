@@ -84,6 +84,12 @@
 /* Defined if you have libaio */
 #cmakedefine HAVE_LIBAIO
 
+/* Defined if you have libudev */
+#cmakedefine HAVE_UDEV
+
+/* Defined if you have libblkid */
+#cmakedefine HAVE_BLKID
+
 /* Defined if you have liburing */
 #cmakedefine HAVE_LIBURING
 
