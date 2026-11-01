@@ -901,7 +901,9 @@ if(WITH_TESTS AND WITH_DMCLOCK_TESTS)
   # of ceph tests
   set(dmclock_TEST ON CACHE BOOL "" FORCE)
 endif()
-add_subdirectory(dmclock)
+if(CEPH_NEED_DMCLOCK)
+  add_subdirectory(dmclock)
+endif()
 
 add_subdirectory(compressor)
 
