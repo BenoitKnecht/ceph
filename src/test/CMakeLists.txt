@@ -662,9 +662,11 @@ if(NOT WIN32)
   ceph_example
   ceph_snappy
   cls_lock
-  cython_modules
   crushtool
   monmaptool)
+if(WITH_PYBIND)
+  add_dependencies(tests cython_modules)
+endif()
 if(WITH_MON)
   add_dependencies(tests ceph-mon ceph-monstore-tool get_command_descriptions)
 endif()

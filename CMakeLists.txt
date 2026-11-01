@@ -694,8 +694,15 @@ endif()
 if(NOT WIN32)
 # Please specify 3.x if you want to build with a certain version of python3.
 set(WITH_PYTHON3 "3" CACHE STRING "build with specified python3 version")
+# the interpreter is needed to generate the config options; the development
+# files are only needed by ceph-mgr and the python bindings
+if(WITH_MGR OR WITH_PYBIND)
+  set(python3_components Interpreter Development)
+else()
+  set(python3_components Interpreter)
+endif()
 find_package(Python3 ${WITH_PYTHON3} EXACT REQUIRED
-  COMPONENTS Interpreter Development)
+  COMPONENTS ${python3_components})
 if(Python3_VERSION VERSION_LESS 3.9)
   message(FATAL_ERROR "${Python3_VERSION} is not supported, please use Python 3.9 and up")
 endif()

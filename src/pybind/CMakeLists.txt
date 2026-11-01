@@ -2,23 +2,25 @@ include(Distutils)
 
 set(CYTHON_MODULE_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cython_modules)
 
-find_package(Cython REQUIRED)
+if(WITH_PYBIND)
+  find_package(Cython REQUIRED)
 
-add_subdirectory(rados)
-add_custom_target(cython_modules ALL
-  DEPENDS cython_rados)
+  add_subdirectory(rados)
+  add_custom_target(cython_modules ALL
+    DEPENDS cython_rados)
 
-if(WITH_RBD)
-  add_subdirectory(rbd)
-  add_dependencies(cython_modules cython_rbd)
-endif()
-if(WITH_LIBCEPHFS)
-  add_subdirectory(cephfs)
-  add_dependencies(cython_modules cython_cephfs)
-endif()
-if(WITH_RADOSGW)
-  add_subdirectory(rgw)
-  add_dependencies(cython_modules cython_rgw)
+  if(WITH_RBD)
+    add_subdirectory(rbd)
+    add_dependencies(cython_modules cython_rbd)
+  endif()
+  if(WITH_LIBCEPHFS)
+    add_subdirectory(cephfs)
+    add_dependencies(cython_modules cython_cephfs)
+  endif()
+  if(WITH_RADOSGW)
+    add_subdirectory(rgw)
+    add_dependencies(cython_modules cython_rgw)
+  endif()
 endif()
 
 # if CMAKE_INSTALL_PREFIX is an empty string, must replace
