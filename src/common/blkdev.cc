@@ -65,10 +65,14 @@ int get_device_by_path(const char *path, char* partition, char* device,
 #include "common/blkdev.h"
 
 #ifdef __linux__
+#ifdef HAVE_UDEV
 #include <libudev.h>
+#endif
 #include <linux/fs.h>
 #include <linux/kdev_t.h>
+#ifdef HAVE_BLKID
 #include <blkid/blkid.h>
+#endif
 
 #include <set>
 
@@ -260,6 +264,7 @@ int BlkDev::serial(char *serial, size_t max) const
 
 int BlkDev::partition(char *partition, size_t max) const
 {
+#ifdef HAVE_BLKID
   dev_t id;
   int r = get_devid(&id);
   if (r < 0)
@@ -272,10 +277,14 @@ int BlkDev::partition(char *partition, size_t max) const
   strncpy(partition, t, max);
   free(t);
   return 0;
+#else
+  return -EOPNOTSUPP;
+#endif
 }
 
 int BlkDev::wholedisk(char *device, size_t max) const
 {
+#ifdef HAVE_BLKID
   dev_t id;
   int r = get_devid(&id);
   if (r < 0)
@@ -286,6 +295,9 @@ int BlkDev::wholedisk(char *device, size_t max) const
     return -EINVAL;
   }
   return 0;
+#else
+  return -EOPNOTSUPP;
+#endif
 }
 
 static int easy_readdir(const std::string& dir, std::set<std::string> *out)
@@ -363,6 +375,14 @@ std::string _decode_model_enc(const std::string& in)
 std::string get_device_id(const std::string& devname,
 			  std::string *err)
 {
+  // ****
+  //   NOTE: please keep this implementation in sync with _get_device_id() in
+  //   src/ceph-volume/ceph_volume/util/device.py
+  // ****
+
+  std::string id_vendor, id_model, id_serial, id_serial_short, id_scsi_serial;
+
+#ifdef HAVE_UDEV
   struct udev_device *dev;
   static struct udev *udev;
   const char *data;
@@ -384,12 +404,6 @@ std::string get_device_id(const std::string& devname,
     return {};
   }
 
-  // ****
-  //   NOTE: please keep this implementation in sync with _get_device_id() in
-  //   src/ceph-volume/ceph_volume/util/device.py
-  // ****
-
-  std::string id_vendor, id_model, id_serial, id_serial_short, id_scsi_serial;
   data = udev_device_get_property_value(dev, "ID_VENDOR");
   if (data) {
     id_vendor = data;
@@ -423,6 +437,7 @@ std::string get_device_id(const std::string& devname,
   }
   udev_device_unref(dev);
   udev_unref(udev);
+#endif // HAVE_UDEV
 
   // ID_SERIAL is usually $vendor_$model_$serial, but not always
   // ID_SERIAL_SHORT is mostly always just the serial
@@ -479,6 +494,9 @@ std::string get_device_id(const std::string& devname,
 
 static std::string get_device_vendor(const std::string& devname)
 {
+  std::string id_vendor, id_model;
+
+#ifdef HAVE_UDEV
   struct udev_device *dev;
   static struct udev *udev;
   const char *data;
@@ -493,7 +511,6 @@ static std::string get_device_vendor(const std::string& devname)
     return {};
   }
 
-  std::string id_vendor, id_model;
   data = udev_device_get_property_value(dev, "ID_VENDOR");
   if (data) {
     id_vendor = data;
@@ -504,6 +521,7 @@ static std::string get_device_vendor(const std::string& devname)
   }
   udev_device_unref(dev);
   udev_unref(udev);
+#endif // HAVE_UDEV
 
   std::transform(id_vendor.begin(), id_vendor.end(), id_vendor.begin(),
 		 ::tolower);
